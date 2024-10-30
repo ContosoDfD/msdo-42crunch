@@ -14,6 +14,7 @@ jobs:
     permissions:
       contents: read # for actions/checkout to fetch code
       security-events: write # for results upload to Github Code Scanning
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -49,3 +50,13 @@ jobs:
           name: 42Crunch_AuditReport_${{ github.run_id }}
           path: ${{ github.workspace }}/reports
           if-no-files-found: error    
+      - name: fetch-and-do-msdo-test
+        shell: bash
+        run: |
+          curl -L -o ./msdo_linux.zip https://www.nuget.org/api/v2/package/Microsoft.Security.DevOps.Cli.linux-x64/
+          unzip ./msdo_linux.zip
+          chmod +x tools/guardian
+          chmod +x tools/Microsoft.Guardian.Cli
+          ls -lah .
+          tools/guardian init --force
+          tools/guardian upload -f 42Crunch_AuditReport_${{ github.run_id }}.SARIF
